@@ -118,6 +118,8 @@ public class PhoneStatusBarPolicy
 
     private static final String BLUETOOTH_SHOW_BATTERY =
             "system:" + Settings.System.BLUETOOTH_SHOW_BATTERY;
+    private static final String NETWORK_TRAFFIC_LOCATION =
+            "system:" + Settings.System.NETWORK_TRAFFIC_LOCATION;
     private static final String NETWORK_TRAFFIC_ENABLED =
             "system:" + Settings.System.NETWORK_TRAFFIC_ENABLED;
 
@@ -192,7 +194,11 @@ public class PhoneStatusBarPolicy
 
     private boolean mShowBluetoothBattery;
 
-    private boolean mShowNetworkTraffic;
+    private boolean mNetworkTrafficEnabled;
+    private boolean mShowNetworkTrafficInStatusBar;
+    private boolean mShowNetworkTraffic() {
+        return mNetworkTrafficEnabled && mShowNetworkTrafficInStatusBar;
+    }
 
     @Inject
     public PhoneStatusBarPolicy(Context context, StatusBarIconController iconController,
@@ -369,8 +375,10 @@ public class PhoneStatusBarPolicy
         updateNfc();
 
         // network traffic
-        mShowNetworkTraffic = Settings.System.getIntForUser(mContext.getContentResolver(),
+        mNetworkTrafficEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
             NETWORK_TRAFFIC_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
+        mShowNetworkTrafficInStatusBar = Settings.System.getIntForUser(mContext.getContentResolver(),
+            NETWORK_TRAFFIC_LOCATION, 0, UserHandle.USER_CURRENT) == 0;
         updateNetworkTraffic();
 
         mRotationLockController.addCallback(this);
@@ -406,6 +414,7 @@ public class PhoneStatusBarPolicy
 
         mTunerService.addTunable(this, BLUETOOTH_SHOW_BATTERY);
         mTunerService.addTunable(this, NETWORK_TRAFFIC_ENABLED);
+        mTunerService.addTunable(this, NETWORK_TRAFFIC_LOCATION);
 
         // Get initial user setup state
         onUserSetupChanged();
@@ -464,8 +473,13 @@ public class PhoneStatusBarPolicy
                 updateBluetooth();
                 break;
             case NETWORK_TRAFFIC_ENABLED:
-                mShowNetworkTraffic =
+                mNetworkTrafficEnabled =
                         TunerService.parseIntegerSwitch(newValue, false);
+                updateNetworkTraffic();
+                break;
+            case NETWORK_TRAFFIC_LOCATION:
+                mShowNetworkTrafficInStatusBar =
+                        TunerService.parseIntegerSwitch(newValue, false) == 0;
                 updateNetworkTraffic();
                 break;
             default:
@@ -629,8 +643,8 @@ public class PhoneStatusBarPolicy
     }
 
     private final void updateNetworkTraffic() {
-        mIconController.setNetworkTraffic(mSlotNetworkTraffic, new NetworkTrafficState(mShowNetworkTraffic));
-        mIconController.setIconVisibility(mSlotNetworkTraffic, mShowNetworkTraffic);
+        mIconController.setNetworkTraffic(mSlotNetworkTraffic, new NetworkTrafficState(mShowNetworkTraffic()));
+        mIconController.setIconVisibility(mSlotNetworkTraffic, mShowNetworkTraffic());
     }
 
     private final void updateTTY() {

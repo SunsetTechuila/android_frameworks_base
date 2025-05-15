@@ -77,6 +77,9 @@ public class NetworkTraffic extends TextView implements TunerService.Tunable,
     private static final int MODE_UPSTREAM_ONLY = 1;
     private static final int MODE_DOWNSTREAM_ONLY = 2;
 
+    protected static final int LOCATION_STATUSBAR = 0;
+    protected static final int LOCATION_QUICK_STATUSBAR = 1;
+
     private static final int MESSAGE_TYPE_PERIODIC_REFRESH = 0;
     private static final int MESSAGE_TYPE_UPDATE_VIEW = 1;
     private static final int MESSAGE_TYPE_ADD_NETWORK = 2;
@@ -88,6 +91,8 @@ public class NetworkTraffic extends TextView implements TunerService.Tunable,
 
     private static final String NETWORK_TRAFFIC_ENABLED =
             "system:" + Settings.System.NETWORK_TRAFFIC_ENABLED;
+    private static final String NETWORK_TRAFFIC_LOCATION =
+            "system:" + Settings.System.NETWORK_TRAFFIC_LOCATION;
     private static final String NETWORK_TRAFFIC_MODE =
             "system:" + Settings.System.NETWORK_TRAFFIC_MODE;
     private static final String NETWORK_TRAFFIC_AUTOHIDE =
@@ -102,6 +107,7 @@ public class NetworkTraffic extends TextView implements TunerService.Tunable,
             "system:" + Settings.System.NETWORK_TRAFFIC_HIDEARROW;
 
     private int mMode = MODE_UPSTREAM_AND_DOWNSTREAM;
+    private int mLocation = LOCATION_STATUSBAR;
     private int mSubMode = MODE_UPSTREAM_AND_DOWNSTREAM;
     private boolean mIsActive;
     private boolean mTrafficActive;
@@ -443,6 +449,7 @@ public class NetworkTraffic extends TextView implements TunerService.Tunable,
             mAttached = true;
             final TunerService tunerService = Dependency.get(TunerService.class);
             tunerService.addTunable(this, NETWORK_TRAFFIC_ENABLED);
+            tunerService.addTunable(this, NETWORK_TRAFFIC_LOCATION);
             tunerService.addTunable(this, NETWORK_TRAFFIC_MODE);
             tunerService.addTunable(this, NETWORK_TRAFFIC_AUTOHIDE);
             tunerService.addTunable(this, NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD);
@@ -537,6 +544,10 @@ public class NetworkTraffic extends TextView implements TunerService.Tunable,
                     setLineSpacing(0.80f, 0.80f);
                 }
                 updateViews();
+                break;
+            case NETWORK_TRAFFIC_LOCATION:
+                mLocation =
+                        TunerService.parseInteger(newValue, 0);
                 break;
             case NETWORK_TRAFFIC_MODE:
                 mMode =

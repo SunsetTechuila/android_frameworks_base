@@ -135,6 +135,9 @@ constructor(
         internal val QS_SHOW_BATTERY_PERCENT =
             "system:" + Settings.System.QS_SHOW_BATTERY_PERCENT
 
+        internal val NETWORK_TRAFFIC_LOCATION =
+            "system:" + Settings.System.NETWORK_TRAFFIC_LOCATION;
+
         private fun Int.stateToString() =
             when (this) {
                 QQS_HEADER_CONSTRAINT -> "QQS Header"
@@ -153,6 +156,9 @@ constructor(
     private var qsBatteryStyle = Settings.System.getIntForUser(
              context.contentResolver, Settings.System.QS_BATTERY_STYLE, -1, UserHandle.USER_CURRENT)
 
+    private var showNetworkTraffic = Settings.System.getIntForUser(
+             context.contentResolver, Settings.System.NETWORK_TRAFFIC_LOCATION, 0, UserHandle.USER_CURRENT) == 1
+
     private lateinit var iconManager: TintedIconManager
     private lateinit var carrierIconSlots: List<String>
     private lateinit var mShadeCarrierGroupController: ShadeCarrierGroupController
@@ -160,6 +166,7 @@ constructor(
     private val batteryIcon: BatteryMeterView = header.requireViewById(R.id.batteryRemainingIcon)
     private val clock: Clock = header.requireViewById(R.id.clock)
     private val date: TextView = header.requireViewById(R.id.date)
+    private val networkTraffic: NetworkTraffic = header.requireViewById(R.id.network_traffic)
     private val iconContainer: StatusIconContainer = header.requireViewById(R.id.statusIcons)
     private val mShadeCarrierGroup: ShadeCarrierGroup = header.requireViewById(R.id.carrier_group)
     private val systemIconsHoverContainer: View =
@@ -412,6 +419,8 @@ constructor(
         tunerService.addTunable(this, QS_BATTERY_STYLE)
         tunerService.addTunable(this, STATUS_BAR_BATTERY_STYLE)
         tunerService.addTunable(this, QS_SHOW_BATTERY_PERCENT)
+
+        tunerService.addTunable(this, NETWORK_TRAFFIC_LOCATION)
     }
 
     override fun onViewDetached() {
@@ -441,6 +450,10 @@ constructor(
             QS_SHOW_BATTERY_PERCENT -> {
                 qsBatteryPercent = TunerService.parseInteger(value, 2)
                 updateQsBatteryStyle()
+            }
+
+            NETWORK_TRAFFIC_LOCATION -> {
+                showNetworkTraffic = TunerService.parseInteger(value, 0) == 1
             }
 
             else -> return
@@ -647,6 +660,7 @@ constructor(
             }
             clock.setTextColor(textColorPrimary)
             date.setTextColor(textColorPrimary)
+            networkTraffic.setTint(textColor);
             mShadeCarrierGroup.updateColors(textColorPrimary, colorStateList)
             batteryIcon.updateColors(textColorPrimary, textColorSecondary, textColorPrimary)
         }

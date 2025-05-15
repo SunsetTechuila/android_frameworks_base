@@ -6709,6 +6709,14 @@ public final class Settings {
         public static final String NETWORK_TRAFFIC_ENABLED = "network_traffic_enabled";
 
         /**
+         * Network traffic indicator location
+         * 0 = Status bar
+         * 1 = Quick status bar
+         * @hide
+         */
+        public static final String NETWORK_TRAFFIC_LOCATION = "network_traffic_location";
+
+        /**
          * Network traffic indicator mode
          * 0 = Display both up- and down-stream traffic
          * 1 = Display up-stream traffic only
